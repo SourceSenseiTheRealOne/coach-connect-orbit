@@ -1,9 +1,25 @@
 package app
 
-import "github.com/revel/revel"
+import (
+	"log/slog"
+	"os"
+	"time"
+
+	"github.com/revel/revel"
+
+	observabilitylogging "github.com/SourceSenseiTheRealOne/coach-connect/mvp-v2/backend/internal/observability/logging"
+)
+
+const serviceName = "coach-connect-api"
+
+var (
+	applicationLogger    = observabilitylogging.NewJSON(os.Stdout, serviceName, slog.LevelInfo)
+	requestLoggingFilter = newRequestLoggingFilter(applicationLogger, newRequestID, time.Now)
+)
 
 func init() {
 	revel.Filters = []revel.Filter{
+		requestLoggingFilter,
 		revel.PanicFilter,
 		revel.RouterFilter,
 		revel.FilterConfiguringFilter,

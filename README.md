@@ -18,6 +18,8 @@ docker compose up --build -d
 docker compose ps
 ```
 
+The Go API emits structured JSON request logs to stdout. Inspect them with `docker compose logs --follow api`; each completion record includes a generated `X-Request-ID` correlation value and excludes headers, bodies, and query strings.
+
 Open the gateway at `http://127.0.0.1:3000`. The individual services are also exposed for diagnostics:
 
 - Social zone: `http://127.0.0.1:3001/feed`

@@ -11,6 +11,16 @@ go tool revel run -a=. dev
 
 The local API listens on `http://127.0.0.1:9000`. The initial liveness route is `GET /api/v1/health`.
 
+## Structured logging
+
+The API uses Go's standard `log/slog` package with newline-delimited JSON on stdout. Every completed request includes `service`, `request_id`, `method`, `path`, `status`, and integer `duration_ms` fields. Statuses below 400 log at `INFO`, 4xx at `WARN`, and 5xx at `ERROR`.
+
+The generated request ID is returned in `X-Request-ID`. Request bodies, query strings, cookies, authorization headers, Clerk tokens, and other headers are deliberately excluded. Inspect container logs with:
+
+```bash
+docker compose logs --follow api
+```
+
 Application code follows the boundary:
 
 ```text
