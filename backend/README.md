@@ -26,3 +26,7 @@ go tool ent generate ./ent/schema
 ```
 
 Local Supabase is initialized under `supabase/`. Ent schemas and migrations are added feature-by-feature; runtime auto-migration is not allowed.
+
+## Container runtime
+
+`backend/Dockerfile` compiles a Revel production artifact in a Go builder and runs it as a non-root user in a minimal Alpine image. Production mode binds `0.0.0.0:9000`; host development remains on `127.0.0.1:9000`. The root Compose graph injects `APP_SECRET` from an ignored `.env` and checks `GET /api/v1/health` before starting the gateway.
