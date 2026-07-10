@@ -16,6 +16,11 @@ GEMINI.md
 .codegraph/
 .gitnexus/
 
+# Local runtime secrets
+.env
+.env.local
+.env.*.local
+
 # OS and editor noise
 .DS_Store
 Thumbs.db

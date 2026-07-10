@@ -10,7 +10,7 @@
     "build": "turbo build",
     "lint": "turbo lint",
     "typecheck": "turbo typecheck",
-    "test": "turbo test && node --test scripts/workspace-structure.test.mjs scripts/dashboard-structure.test.mjs",
+    "test": "turbo test && node --test scripts/workspace-structure.test.mjs scripts/dashboard-structure.test.mjs scripts/docker-structure.test.mjs",
     "test:structure": "node --test scripts/workspace-structure.test.mjs",
     "generate:api": "openapi-typescript ../backend/contracts/openapi.yaml -o packages/go-api-client/src/generated/schema.ts",
     "format": "prettier --write .",

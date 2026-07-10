@@ -16,6 +16,10 @@ pnpm dev
 
 The gateway rewrites `/feed` and related social paths to the social zone, and `/marketplace` paths to the marketplace zone. Browser API traffic uses `/api/trpc`; tRPC procedures call the Go API wrapper and never the database.
 
+## Container runtime
+
+Each zone has its own multi-stage, non-root production image and emits a Next.js standalone artifact. Build and start all zones from the repository root with `docker compose up --build -d`; service-to-service origins are injected by Compose rather than hard-coded into the images.
+
 ## Quality gates
 
 ```bash

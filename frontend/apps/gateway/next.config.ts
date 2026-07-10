@@ -1,5 +1,6 @@
 import { localServiceOrigins } from "@coach-connect/config";
 import type { NextConfig } from "next";
+import { resolve } from "node:path";
 
 const socialOrigin = process.env.SOCIAL_ORIGIN ?? localServiceOrigins.social;
 const marketplaceOrigin =
@@ -7,6 +8,8 @@ const marketplaceOrigin =
 
 const nextConfig: NextConfig = {
   allowedDevOrigins: ["127.0.0.1"],
+  output: "standalone",
+  outputFileTracingRoot: resolve(process.cwd(), "../.."),
   transpilePackages: [
     "@coach-connect/auth",
     "@coach-connect/config",

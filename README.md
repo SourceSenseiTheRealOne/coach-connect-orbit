@@ -8,7 +8,32 @@ Specification-driven starter scaffold for a football social network and marketpl
 - `backend/` — Go/Revel API, OpenAPI contract, Ent schema boundary, local Supabase project
 - `context/` — product, architecture, UI, code, workflow, and progress specifications
 
-## Start locally
+## Start the complete stack with Docker
+
+Create a local environment file and replace `APP_SECRET` with a high-entropy value:
+
+```bash
+cp .env.example .env
+docker compose up --build -d
+docker compose ps
+```
+
+Open the gateway at `http://127.0.0.1:3000`. The individual services are also exposed for diagnostics:
+
+- Social zone: `http://127.0.0.1:3001/feed`
+- Marketplace zone: `http://127.0.0.1:3002/marketplace`
+- Go API health: `http://127.0.0.1:9000/api/v1/health`
+
+Without Clerk development keys, `/sign-in` and `/sign-up` show the intentional configuration screen and `/dashboard` redirects to sign-in. Add `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY` to the ignored root `.env`, then recreate the frontend services to activate Clerk.
+
+```bash
+docker compose up -d --force-recreate gateway social marketplace
+docker compose down
+```
+
+Compose starts the three independently deployable Next.js standalone images and the compiled Go/Revel API with health-aware dependencies. Supabase is intentionally not part of the default graph until an approved database-backed slice requires it.
+
+## Start directly on the host
 
 Terminal 1:
 
