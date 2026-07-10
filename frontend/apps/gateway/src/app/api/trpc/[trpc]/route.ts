@@ -1,0 +1,26 @@
+import "server-only";
+
+import { localServiceOrigins } from "@coach-connect/config";
+import { createGoApiClient } from "@coach-connect/go-api-client";
+import { appRouter } from "@coach-connect/trpc-contract";
+import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
+
+const api = createGoApiClient({
+  baseUrl: process.env.GO_API_URL ?? localServiceOrigins.goApi,
+});
+
+function handler(request: Request) {
+  return fetchRequestHandler({
+    endpoint: "/api/trpc",
+    req: request,
+    router: appRouter,
+    createContext: () => ({ api }),
+    onError: ({ error, path }) => {
+      if (process.env.NODE_ENV === "development") {
+        console.error(`tRPC failure on ${path ?? "unknown procedure"}`, error);
+      }
+    },
+  });
+}
+
+export { handler as GET, handler as POST };

@@ -1,0 +1,39 @@
+{
+  "name": "@coach-connect/gateway",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --port 3000",
+    "build": "next build",
+    "start": "next start --port 3000",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@coach-connect/auth": "workspace:*",
+    "@coach-connect/config": "workspace:*",
+    "@coach-connect/ui": "workspace:*",
+    "@clerk/nextjs": "7.0.5",
+    "lucide-react": "1.24.0",
+    "next": "16.2.10",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "@coach-connect/go-api-client": "workspace:*",
+    "@coach-connect/trpc-client": "workspace:*",
+    "@coach-connect/trpc-contract": "workspace:*",
+    "@trpc/server": "11.18.0",
+    "server-only": "0.0.1"
+  },
+  "devDependencies": {
+    "@coach-connect/eslint-config": "workspace:*",
+    "@coach-connect/typescript-config": "workspace:*",
+    "@tailwindcss/postcss": "4.3.2",
+    "@types/node": "26.1.1",
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
+    "eslint": "9.39.4",
+    "eslint-config-next": "16.2.10",
+    "tailwindcss": "4.3.2",
+    "typescript": "5.9.3"
+  }
+}

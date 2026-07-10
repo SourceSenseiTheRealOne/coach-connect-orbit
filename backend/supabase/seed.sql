@@ -1,0 +1,2 @@
+-- Coach Connect MVP v2 local seed.
+-- Feature-specific deterministic seed data will be added with approved migrations.

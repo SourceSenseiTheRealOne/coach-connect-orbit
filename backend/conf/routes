@@ -1,0 +1,2 @@
+# Explicit API routes only. Do not add Revel auto-routing.
+GET     /api/v1/health                         Health.Check

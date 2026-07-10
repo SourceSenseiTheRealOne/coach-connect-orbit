@@ -1,0 +1,12 @@
+bin/
+build/
+tmp/
+target/
+app/tmp/
+app/routes/
+log/
+*.log
+.env
+.env.*
+!.env.example
+supabase/.temp/

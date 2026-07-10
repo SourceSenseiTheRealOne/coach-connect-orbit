@@ -1,0 +1,4 @@
+{
+  "extends": "@coach-connect/typescript-config/library.json",
+  "include": ["src/**/*.ts", "src/**/*.tsx"]
+}

@@ -1,0 +1,26 @@
+{
+  "name": "@coach-connect/frontend",
+  "private": true,
+  "packageManager": "pnpm@10.30.1",
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "typecheck": "turbo typecheck",
+    "test": "turbo test && node --test scripts/workspace-structure.test.mjs scripts/dashboard-structure.test.mjs",
+    "test:structure": "node --test scripts/workspace-structure.test.mjs",
+    "generate:api": "openapi-typescript ../backend/contracts/openapi.yaml -o packages/go-api-client/src/generated/schema.ts",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "openapi-typescript": "7.13.0",
+    "prettier": "3.9.5",
+    "turbo": "2.10.4",
+    "typescript": "5.9.3",
+    "vitest": "4.1.10"
+  }
+}

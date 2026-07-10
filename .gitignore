@@ -1,0 +1,23 @@
+# Local agent and private working context
+context/
+AGENTS.MD
+AGENTS.md
+CLAUDE.md
+GEMINI.md
+.hermes/
+.claude/
+.cursor/
+.cursorrules
+.windsurfrules
+.aider*
+.github/copilot-instructions.md
+
+# Local code intelligence indexes
+.codegraph/
+.gitnexus/
+
+# OS and editor noise
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
