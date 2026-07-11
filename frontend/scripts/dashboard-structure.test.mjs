@@ -86,6 +86,10 @@ test("dashboard scaffold has Clerk protection and an authenticated shell", async
     "frontend/apps/gateway/src/lib/verified-access.ts",
   );
   assert.match(verifiedAccess, /await auth\(\)/);
+  assert.match(verifiedAccess, /await currentUser\(\)/);
+  assert.match(verifiedAccess, /primaryEmail.*verification.*status/s);
+  assert.match(verifiedAccess, /source\.sensei1205@gmail\.com/);
+  assert.match(verifiedAccess, /applyVerifiedEmailAdminOverride/);
   assert.match(verifiedAccess, /resolveAccessFromSession/);
   assert.match(verifiedAccess, /getRequestAccess/);
   assert.match(verifiedAccess, /server-only/);

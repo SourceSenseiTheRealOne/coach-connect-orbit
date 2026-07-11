@@ -34,7 +34,9 @@ The backend-managed Clerk public metadata shape is:
 }
 ```
 
-Do not let clients update this metadata. `resolveAccessFromSession()` accepts Clerk's already-verified server-side `sessionClaims`; the role and tier are validated atomically, so a missing or malformed field makes the entire entitlement claim fail closed to `user` + `free`. After changing metadata during development, reload the Clerk session so a fresh token contains the update.
+Do not let clients update this metadata. `resolveAccessFromSession()` accepts Clerk's already-verified server-side `sessionClaims`; the role and tier are validated atomically, so a missing or malformed field makes the entire entitlement claim fail closed to `user` + `free`. `createAccessContext()` enforces the same atomic rule: omitting both values gives an authenticated user the default `user` + `free` access, while supplying only one or mixing a valid value with an invalid value fails the whole pair closed. After changing metadata during development, reload the Clerk session so a fresh token contains the update.
+
+The gateway separately checks Clerk's server-fetched, verified primary email against the permanent owner-admin allowlist. A match grants only the independent platform `admin` role and preserves the resolved subscription tier; unverified, mismatched, or missing emails never elevate access.
 
 The claim is temporary entitlement scaffolding. Future Stripe subscription events will update server-owned subscription state behind a resolver with the same stable tier slugs. Security-sensitive server operations must not depend only on UI-visible claim state.
 

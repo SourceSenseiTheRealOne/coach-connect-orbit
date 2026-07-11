@@ -56,12 +56,19 @@ export function isPlatformRole(value: unknown): value is PlatformRole {
   return value === "user" || value === "admin";
 }
 
-function normalizeRole(value: unknown): PlatformRole {
-  return value === "admin" ? "admin" : "user";
-}
+function resolveAccessMetadata(
+  role: unknown,
+  tier: unknown,
+): { role: PlatformRole; tier: AccessTier } {
+  if (role === undefined && tier === undefined) {
+    return { role: "user", tier: "free" };
+  }
 
-function normalizeTier(value: unknown): AccessTier {
-  return isAccessTier(value) ? value : "free";
+  if (isPlatformRole(role) && isAccessTier(tier)) {
+    return { role, tier };
+  }
+
+  return { role: "user", tier: "free" };
 }
 
 export function createAccessContext(input: AccessContextInput): AccessContext {
@@ -77,8 +84,7 @@ export function createAccessContext(input: AccessContextInput): AccessContext {
     };
   }
 
-  const role = normalizeRole(input.role);
-  const tier = normalizeTier(input.tier);
+  const { role, tier } = resolveAccessMetadata(input.role, input.tier);
 
   return {
     state: "authenticated",

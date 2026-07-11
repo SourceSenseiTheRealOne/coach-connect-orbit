@@ -58,7 +58,9 @@ describe("access procedures", () => {
 
   it("returns FORBIDDEN when an authenticated user lacks the policy", async () => {
     const caller = guardedRouter.createCaller(
-      createContext(createAccessContext({ userId: "free", tier: "free" })),
+      createContext(
+        createAccessContext({ userId: "free", role: "user", tier: "free" }),
+      ),
     );
 
     await expect(caller.proFeature()).rejects.toMatchObject({
@@ -71,7 +73,9 @@ describe("access procedures", () => {
 
   it("allows a paid tier to use its protected procedure", async () => {
     const caller = guardedRouter.createCaller(
-      createContext(createAccessContext({ userId: "pro", tier: "pro" })),
+      createContext(
+        createAccessContext({ userId: "pro", role: "user", tier: "pro" }),
+      ),
     );
 
     await expect(caller.proFeature()).resolves.toBe("pro");

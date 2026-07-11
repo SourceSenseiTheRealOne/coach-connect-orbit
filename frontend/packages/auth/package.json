@@ -6,6 +6,7 @@
   "exports": {
     ".": "./src/index.tsx",
     "./access": "./src/access.ts",
+    "./email-admin": "./src/email-admin.ts",
     "./feature-gate": "./src/feature-gate.ts",
     "./session-access": "./src/session-access.ts",
     "./tier-catalog": "./src/tier-catalog.ts"
