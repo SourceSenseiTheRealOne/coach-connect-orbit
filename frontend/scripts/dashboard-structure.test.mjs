@@ -33,6 +33,7 @@ async function collectFiles(root, extension, files = []) {
 test("dashboard scaffold has Clerk protection and an authenticated shell", async () => {
   const expectedFiles = [
     path.join(gatewayRoot, "src/proxy.ts"),
+    path.join(gatewayRoot, "src/lib/verified-access.ts"),
     path.join(gatewayRoot, "src/app/dashboard/page.tsx"),
     path.join(gatewayRoot, "src/app/dashboard/layout.tsx"),
     path.join(frontendRoot, "packages/ui/src/theme-provider.tsx"),
@@ -68,10 +69,32 @@ test("dashboard scaffold has Clerk protection and an authenticated shell", async
   const dashboardLayout = await read(
     "frontend/apps/gateway/src/app/dashboard/layout.tsx",
   );
+  assert.match(dashboardLayout, /getVerifiedAccess/);
+  assert.match(dashboardLayout, /canAccess/);
+  assert.match(dashboardLayout, /access\.tier/);
+  assert.match(dashboardLayout, /access\.isAdmin\s*\?\s*\(/);
+  assert.doesNotMatch(
+    dashboardLayout,
+    /access\.isAdmin\s*\?\s*["']Admin["']\s*:\s*access\.tier/,
+  );
   assert.match(dashboardLayout, /<aside/);
   assert.match(dashboardLayout, /<header/);
   assert.match(dashboardLayout, /ThemeToggle/);
   assert.match(dashboardLayout, /UserButton/);
+
+  const verifiedAccess = await read(
+    "frontend/apps/gateway/src/lib/verified-access.ts",
+  );
+  assert.match(verifiedAccess, /await auth\(\)/);
+  assert.match(verifiedAccess, /resolveAccessFromSession/);
+  assert.match(verifiedAccess, /getRequestAccess/);
+  assert.match(verifiedAccess, /server-only/);
+
+  const trpcRoute = await read(
+    "frontend/apps/gateway/src/app/api/trpc/[trpc]/route.ts",
+  );
+  assert.match(trpcRoute, /getRequestAccess/);
+  assert.match(trpcRoute, /access/);
 
   const signInPage = await read(
     "frontend/apps/gateway/src/app/sign-in/[[...sign-in]]/page.tsx",

@@ -1,3 +1,4 @@
+import { canAccess, type AccessRequirement } from "@coach-connect/auth/access";
 import { ThemeToggle } from "@coach-connect/ui";
 import { UserButton } from "@clerk/nextjs";
 import {
@@ -10,7 +11,14 @@ import {
   UsersRound,
 } from "lucide-react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
+
+import { getVerifiedAccess } from "../../lib/verified-access";
+
+const authenticatedFeature = {
+  kind: "authenticated",
+} as const satisfies AccessRequirement;
 
 const navigation = [
   {
@@ -18,30 +26,62 @@ const navigation = [
     icon: LayoutDashboard,
     href: "/dashboard",
     available: true,
+    requirement: authenticatedFeature,
   },
   {
     label: "Profile",
     icon: CircleUserRound,
     href: "/profile",
     available: false,
+    requirement: authenticatedFeature,
   },
-  { label: "Network", icon: UsersRound, href: "/network", available: false },
+  {
+    label: "Network",
+    icon: UsersRound,
+    href: "/network",
+    available: false,
+    requirement: authenticatedFeature,
+  },
   {
     label: "Messages",
     icon: MessageCircleMore,
     href: "/messages",
     available: false,
+    requirement: authenticatedFeature,
   },
-  { label: "Marketplace", icon: Store, href: "/marketplace", available: false },
+  {
+    label: "Marketplace",
+    icon: Store,
+    href: "/marketplace",
+    available: false,
+    requirement: authenticatedFeature,
+  },
+  {
+    label: "Admin",
+    icon: ShieldCheck,
+    href: "/admin",
+    available: false,
+    requirement: { kind: "admin-only" },
+  },
 ] as const;
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: Readonly<{ children: ReactNode }>) {
   const isClerkConfigured = Boolean(
     process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY &&
     process.env.CLERK_SECRET_KEY,
   );
+
+  if (!isClerkConfigured) {
+    redirect("/sign-in?redirect_url=/dashboard");
+  }
+
+  const access = await getVerifiedAccess();
+
+  if (!access.isAuthenticated) {
+    redirect("/sign-in?redirect_url=/dashboard");
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-950 dark:bg-slate-950 dark:text-slate-50">
@@ -71,31 +111,33 @@ export default function DashboardLayout({
           <p className="mb-2 px-3 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">
             Workspace
           </p>
-          {navigation.map(({ label, icon: Icon, href, available }) =>
-            available ? (
-              <Link
-                className="flex items-center gap-3 rounded-xl bg-slate-950 px-3 py-2.5 text-sm font-medium text-white shadow-sm dark:bg-white dark:text-slate-950"
-                href={href}
-                key={label}
-              >
-                <Icon aria-hidden="true" className="size-4.5" />
-                {label}
-              </Link>
-            ) : (
-              <span
-                aria-disabled="true"
-                className="flex cursor-not-allowed items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-400 dark:text-slate-600"
-                key={label}
-                title="Coming later"
-              >
-                <Icon aria-hidden="true" className="size-4.5" />
-                {label}
-                <span className="ml-auto text-[0.62rem] font-semibold uppercase tracking-wider">
-                  Soon
+          {navigation
+            .filter(({ requirement }) => canAccess(access, requirement))
+            .map(({ label, icon: Icon, href, available }) =>
+              available ? (
+                <Link
+                  className="flex items-center gap-3 rounded-xl bg-slate-950 px-3 py-2.5 text-sm font-medium text-white shadow-sm dark:bg-white dark:text-slate-950"
+                  href={href}
+                  key={label}
+                >
+                  <Icon aria-hidden="true" className="size-4.5" />
+                  {label}
+                </Link>
+              ) : (
+                <span
+                  aria-disabled="true"
+                  className="flex cursor-not-allowed items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-400 dark:text-slate-600"
+                  key={label}
+                  title="Coming later"
+                >
+                  <Icon aria-hidden="true" className="size-4.5" />
+                  {label}
+                  <span className="ml-auto text-[0.62rem] font-semibold uppercase tracking-wider">
+                    Soon
+                  </span>
                 </span>
-              </span>
-            ),
-          )}
+              ),
+            )}
         </nav>
 
         <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5">
@@ -135,6 +177,14 @@ export default function DashboardLayout({
           </div>
 
           <div className="ml-auto flex items-center gap-2">
+            <span className="hidden rounded-lg bg-slate-100 px-2.5 py-1.5 text-xs font-semibold capitalize text-slate-700 dark:bg-white/10 dark:text-slate-200 sm:inline-flex">
+              {access.tier}
+            </span>
+            {access.isAdmin ? (
+              <span className="hidden rounded-lg bg-lime-100 px-2.5 py-1.5 text-xs font-semibold text-lime-800 dark:bg-lime-300/10 dark:text-lime-300 sm:inline-flex">
+                Admin
+              </span>
+            ) : null}
             <ThemeToggle />
             {isClerkConfigured ? (
               <UserButton
