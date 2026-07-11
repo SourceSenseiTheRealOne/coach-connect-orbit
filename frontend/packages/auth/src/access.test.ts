@@ -49,8 +49,26 @@ describe("createAccessContext", () => {
     });
   });
 
+  it.each([
+    { role: "admin", tier: undefined },
+    { role: "admin", tier: "enterprise" },
+    { role: undefined, tier: "elite" },
+    { role: "owner", tier: "elite" },
+  ])("fails mixed-validity values closed atomically %#", ({ role, tier }) => {
+    expect(
+      createAccessContext({ userId: "user_mixed", role, tier }),
+    ).toMatchObject({
+      role: "user",
+      tier: "free",
+      isAdmin: false,
+      isPaid: false,
+    });
+  });
+
   it.each(["pro", "elite"] as const)("marks the %s tier as paid", (tier) => {
-    expect(createAccessContext({ userId: "user_123", tier }).isPaid).toBe(true);
+    expect(
+      createAccessContext({ userId: "user_123", role: "user", tier }).isPaid,
+    ).toBe(true);
   });
 });
 
@@ -67,19 +85,19 @@ describe("canAccess", () => {
   it("uses the free < pro < elite tier hierarchy", () => {
     expect(
       canAccess(
-        createAccessContext({ userId: "free", tier: "free" }),
+        createAccessContext({ userId: "free", role: "user", tier: "free" }),
         proFeature,
       ),
     ).toBe(false);
     expect(
       canAccess(
-        createAccessContext({ userId: "pro", tier: "pro" }),
+        createAccessContext({ userId: "pro", role: "user", tier: "pro" }),
         proFeature,
       ),
     ).toBe(true);
     expect(
       canAccess(
-        createAccessContext({ userId: "elite", tier: "elite" }),
+        createAccessContext({ userId: "elite", role: "user", tier: "elite" }),
         proFeature,
       ),
     ).toBe(true);
@@ -116,7 +134,7 @@ describe("requireAccess", () => {
 
     expect(() =>
       requireAccess(
-        createAccessContext({ userId: "free", tier: "free" }),
+        createAccessContext({ userId: "free", role: "user", tier: "free" }),
         proFeature,
       ),
     ).toThrowError(new AccessDeniedError("forbidden"));
