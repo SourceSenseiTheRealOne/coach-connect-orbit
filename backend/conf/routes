@@ -1,2 +1,18 @@
 # Explicit API routes only. Do not add Revel auto-routing.
 GET     /api/v1/health                         Health.Check
+GET     /api/v1/feed                           Feed.ListPosts
+GET     /api/v1/saved-posts                    Feed.ListSaved
+GET     /api/v1/posts                          Feed.ListPosts
+POST    /api/v1/posts                          Feed.CreatePost
+GET     /api/v1/posts/saved                    Feed.ListSaved
+GET     /api/v1/posts/:id                      Feed.GetPost
+PATCH   /api/v1/posts/:id                      Feed.UpdatePost
+DELETE  /api/v1/posts/:id                      Feed.DeletePost
+PUT     /api/v1/posts/:id/like                 Feed.Like
+DELETE  /api/v1/posts/:id/like                 Feed.Unlike
+PUT     /api/v1/posts/:id/save                 Feed.Save
+DELETE  /api/v1/posts/:id/save                 Feed.Unsave
+GET     /api/v1/posts/:postID/comments         Feed.ListComments
+POST    /api/v1/posts/:postID/comments         Feed.CreateComment
+PATCH   /api/v1/comments/:id                   Feed.UpdateComment
+DELETE  /api/v1/comments/:id                   Feed.DeleteComment

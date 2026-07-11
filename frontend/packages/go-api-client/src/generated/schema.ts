@@ -11,7 +11,6 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Check API liveness */
         get: operations["getHealth"];
         put?: never;
         post?: never;
@@ -19,6 +18,144 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/v1/feed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listFeed"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/saved-posts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listSavedPosts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/posts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["createPost"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/posts/{postId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                postId: components["parameters"]["PostId"];
+            };
+            cookie?: never;
+        };
+        get: operations["getPost"];
+        put?: never;
+        post?: never;
+        delete: operations["deletePost"];
+        options?: never;
+        head?: never;
+        patch: operations["updatePost"];
+        trace?: never;
+    };
+    "/api/v1/posts/{postId}/like": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                postId: components["parameters"]["PostId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["setPostLike"];
+        post?: never;
+        delete: operations["unsetPostLike"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/posts/{postId}/save": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                postId: components["parameters"]["PostId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["setSavedPost"];
+        post?: never;
+        delete: operations["unsetSavedPost"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/posts/{postId}/comments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                postId: components["parameters"]["PostId"];
+            };
+            cookie?: never;
+        };
+        get: operations["listComments"];
+        put?: never;
+        post: operations["createComment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/comments/{commentId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                commentId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["deleteComment"];
+        options?: never;
+        head?: never;
+        patch: operations["updateComment"];
         trace?: never;
     };
 }
@@ -31,9 +168,125 @@ export interface components {
             /** @constant */
             service: "coach-connect-api";
         };
+        BodyRequest: {
+            body: string;
+        };
+        CommentBodyRequest: {
+            body: string;
+        };
+        AuthorSummary: {
+            /** Format: uuid */
+            id: string;
+            displayName: string;
+            /** Format: uri */
+            avatarUrl?: string | null;
+        };
+        ImageMedia: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uri */
+            url: string;
+            altText: string;
+            /** @enum {string} */
+            mimeType: "image/jpeg" | "image/png" | "image/webp";
+            width: number;
+            height: number;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        Post: {
+            /** Format: uuid */
+            id: string;
+            author: components["schemas"]["AuthorSummary"];
+            body: string;
+            media: components["schemas"]["ImageMedia"] | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+            likeCount: number;
+            commentCount: number;
+            viewerHasLiked: boolean;
+            viewerHasSaved: boolean;
+            viewerOwns: boolean;
+        };
+        FeedPage: {
+            items: components["schemas"]["Post"][];
+            nextCursor?: string;
+        };
+        Comment: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            postId: string;
+            author: components["schemas"]["AuthorSummary"];
+            body: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+            viewerOwns: boolean;
+        };
+        CommentPage: {
+            items: components["schemas"]["Comment"][];
+            nextCursor?: string;
+        };
+        ErrorResponse: {
+            code: string;
+        };
     };
-    responses: never;
-    parameters: never;
+    responses: {
+        /** @description Post */
+        Post: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["Post"];
+            };
+        };
+        /** @description Feed page */
+        FeedPage: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["FeedPage"];
+            };
+        };
+        /** @description Comment */
+        Comment: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["Comment"];
+            };
+        };
+        /** @description Comments */
+        CommentPage: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["CommentPage"];
+            };
+        };
+        /** @description Stable error */
+        Error: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ErrorResponse"];
+            };
+        };
+    };
+    parameters: {
+        Cursor: string;
+        Limit: number;
+        PostId: string;
+    };
     requestBodies: never;
     headers: never;
     pathItems: never;
@@ -58,6 +311,268 @@ export interface operations {
                     "application/json": components["schemas"]["HealthResponse"];
                 };
             };
+        };
+    };
+    listFeed: {
+        parameters: {
+            query?: {
+                cursor?: components["parameters"]["Cursor"];
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["FeedPage"];
+            400: components["responses"]["Error"];
+            401: components["responses"]["Error"];
+        };
+    };
+    listSavedPosts: {
+        parameters: {
+            query?: {
+                cursor?: components["parameters"]["Cursor"];
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["FeedPage"];
+            400: components["responses"]["Error"];
+            401: components["responses"]["Error"];
+        };
+    };
+    createPost: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BodyRequest"];
+            };
+        };
+        responses: {
+            201: components["responses"]["Post"];
+            400: components["responses"]["Error"];
+            401: components["responses"]["Error"];
+        };
+    };
+    getPost: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                postId: components["parameters"]["PostId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["Post"];
+            401: components["responses"]["Error"];
+            404: components["responses"]["Error"];
+        };
+    };
+    deletePost: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                postId: components["parameters"]["PostId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Error"];
+            403: components["responses"]["Error"];
+            404: components["responses"]["Error"];
+        };
+    };
+    updatePost: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                postId: components["parameters"]["PostId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BodyRequest"];
+            };
+        };
+        responses: {
+            200: components["responses"]["Post"];
+            400: components["responses"]["Error"];
+            401: components["responses"]["Error"];
+            403: components["responses"]["Error"];
+            404: components["responses"]["Error"];
+        };
+    };
+    setPostLike: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                postId: components["parameters"]["PostId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["Post"];
+            401: components["responses"]["Error"];
+            404: components["responses"]["Error"];
+        };
+    };
+    unsetPostLike: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                postId: components["parameters"]["PostId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["Post"];
+            401: components["responses"]["Error"];
+            404: components["responses"]["Error"];
+        };
+    };
+    setSavedPost: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                postId: components["parameters"]["PostId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["Post"];
+            401: components["responses"]["Error"];
+            404: components["responses"]["Error"];
+        };
+    };
+    unsetSavedPost: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                postId: components["parameters"]["PostId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["Post"];
+            401: components["responses"]["Error"];
+            404: components["responses"]["Error"];
+        };
+    };
+    listComments: {
+        parameters: {
+            query?: {
+                cursor?: components["parameters"]["Cursor"];
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: never;
+            path: {
+                postId: components["parameters"]["PostId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["CommentPage"];
+            401: components["responses"]["Error"];
+            404: components["responses"]["Error"];
+        };
+    };
+    createComment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                postId: components["parameters"]["PostId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CommentBodyRequest"];
+            };
+        };
+        responses: {
+            201: components["responses"]["Comment"];
+            400: components["responses"]["Error"];
+            401: components["responses"]["Error"];
+            404: components["responses"]["Error"];
+        };
+    };
+    deleteComment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                commentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Error"];
+            403: components["responses"]["Error"];
+            404: components["responses"]["Error"];
+        };
+    };
+    updateComment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                commentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CommentBodyRequest"];
+            };
+        };
+        responses: {
+            200: components["responses"]["Comment"];
+            400: components["responses"]["Error"];
+            401: components["responses"]["Error"];
+            403: components["responses"]["Error"];
+            404: components["responses"]["Error"];
         };
     };
 }

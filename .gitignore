@@ -21,6 +21,9 @@ GEMINI.md
 .env.local
 .env.*.local
 
+# Local runtime state
+backend/supabase/.branches/
+
 # OS and editor noise
 .DS_Store
 Thumbs.db

@@ -7,6 +7,8 @@ services:
       dockerfile: Dockerfile
     environment:
       APP_SECRET: ${APP_SECRET:?APP_SECRET must be set in .env}
+      CLERK_SECRET_KEY: ${CLERK_SECRET_KEY:-}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@host.docker.internal:54322/postgres?sslmode=disable}
     ports:
       - "9000:9000"
     healthcheck:
@@ -22,12 +24,15 @@ services:
       context: ./frontend
       dockerfile: apps/social/Dockerfile
     environment:
+      GATEWAY_ORIGIN: http://gateway:3000
+      GATEWAY_PUBLIC_ORIGIN: ${GATEWAY_PUBLIC_ORIGIN:-http://localhost:3000}
+      CLERK_SECRET_KEY: ${CLERK_SECRET_KEY:-}
       NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:-}
       NEXT_TELEMETRY_DISABLED: "1"
     ports:
       - "3001:3001"
     healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3001/feed').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3001/api/health').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"]
       interval: 5s
       timeout: 3s
       retries: 12
@@ -73,8 +78,8 @@ services:
       CLERK_SECRET_KEY: ${CLERK_SECRET_KEY:-}
       NEXT_PUBLIC_CLERK_SIGN_IN_URL: /sign-in
       NEXT_PUBLIC_CLERK_SIGN_UP_URL: /sign-up
-      NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL: /dashboard
-      NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL: /dashboard
+      NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL: /dashboard
+      NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL: /dashboard
       NEXT_TELEMETRY_DISABLED: "1"
     ports:
       - "3000:3000"

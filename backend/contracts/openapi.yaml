@@ -1,16 +1,18 @@
 openapi: 3.1.0
 info:
   title: Coach Connect API
-  version: 0.1.0
+  version: 0.2.0
   description: HTTP contract between the tRPC BFF and the Go/Revel API.
 servers:
   - url: http://localhost:9000
     description: Local Revel API
+security:
+  - bearerAuth: []
 paths:
   /api/v1/health:
     get:
       operationId: getHealth
-      summary: Check API liveness
+      security: []
       tags: [System]
       responses:
         "200":
@@ -19,7 +21,244 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthResponse"
+  /api/v1/feed:
+    get:
+      operationId: listFeed
+      tags: [Social]
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          $ref: "#/components/responses/FeedPage"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+  /api/v1/saved-posts:
+    get:
+      operationId: listSavedPosts
+      tags: [Social]
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          $ref: "#/components/responses/FeedPage"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+  /api/v1/posts:
+    post:
+      operationId: createPost
+      tags: [Social]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BodyRequest"
+      responses:
+        "201":
+          $ref: "#/components/responses/Post"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+  /api/v1/posts/{postId}:
+    parameters:
+      - $ref: "#/components/parameters/PostId"
+    get:
+      operationId: getPost
+      tags: [Social]
+      responses:
+        "200":
+          $ref: "#/components/responses/Post"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+    patch:
+      operationId: updatePost
+      tags: [Social]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BodyRequest"
+      responses:
+        "200":
+          $ref: "#/components/responses/Post"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+    delete:
+      operationId: deletePost
+      tags: [Social]
+      responses:
+        "200":
+          description: Deleted
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+  /api/v1/posts/{postId}/like:
+    parameters:
+      - $ref: "#/components/parameters/PostId"
+    put:
+      operationId: setPostLike
+      tags: [Social]
+      responses:
+        "200":
+          $ref: "#/components/responses/Post"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+    delete:
+      operationId: unsetPostLike
+      tags: [Social]
+      responses:
+        "200":
+          $ref: "#/components/responses/Post"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+  /api/v1/posts/{postId}/save:
+    parameters:
+      - $ref: "#/components/parameters/PostId"
+    put:
+      operationId: setSavedPost
+      tags: [Social]
+      responses:
+        "200":
+          $ref: "#/components/responses/Post"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+    delete:
+      operationId: unsetSavedPost
+      tags: [Social]
+      responses:
+        "200":
+          $ref: "#/components/responses/Post"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+  /api/v1/posts/{postId}/comments:
+    parameters:
+      - $ref: "#/components/parameters/PostId"
+    get:
+      operationId: listComments
+      tags: [Social]
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          $ref: "#/components/responses/CommentPage"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+    post:
+      operationId: createComment
+      tags: [Social]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommentBodyRequest"
+      responses:
+        "201":
+          $ref: "#/components/responses/Comment"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+  /api/v1/comments/{commentId}:
+    parameters:
+      - name: commentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    patch:
+      operationId: updateComment
+      tags: [Social]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommentBodyRequest"
+      responses:
+        "200":
+          $ref: "#/components/responses/Comment"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+    delete:
+      operationId: deleteComment
+      tags: [Social]
+      responses:
+        "200":
+          description: Deleted
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    Cursor:
+      name: cursor
+      in: query
+      schema:
+        type: string
+        maxLength: 512
+    Limit:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 50
+        default: 20
+    PostId:
+      name: postId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
   schemas:
     HealthResponse:
       type: object
@@ -32,3 +271,180 @@ components:
         service:
           type: string
           const: coach-connect-api
+    BodyRequest:
+      type: object
+      additionalProperties: false
+      required: [body]
+      properties:
+        body:
+          type: string
+          minLength: 1
+          maxLength: 2000
+    CommentBodyRequest:
+      type: object
+      additionalProperties: false
+      required: [body]
+      properties:
+        body:
+          type: string
+          minLength: 1
+          maxLength: 1000
+    AuthorSummary:
+      type: object
+      additionalProperties: false
+      required: [id, displayName]
+      properties:
+        id:
+          type: string
+          format: uuid
+        displayName:
+          type: string
+          minLength: 1
+          maxLength: 80
+        avatarUrl:
+          type: [string, "null"]
+          format: uri
+    ImageMedia:
+      type: object
+      additionalProperties: false
+      required: [id, url, altText, mimeType, width, height, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        url:
+          type: string
+          format: uri
+        altText:
+          type: string
+          maxLength: 240
+        mimeType:
+          type: string
+          enum: [image/jpeg, image/png, image/webp]
+        width:
+          type: integer
+          minimum: 1
+        height:
+          type: integer
+          minimum: 1
+        createdAt:
+          type: string
+          format: date-time
+    Post:
+      type: object
+      additionalProperties: false
+      required:
+        [id, author, body, media, createdAt, updatedAt, likeCount, commentCount, viewerHasLiked, viewerHasSaved, viewerOwns]
+      properties:
+        id:
+          type: string
+          format: uuid
+        author:
+          $ref: "#/components/schemas/AuthorSummary"
+        body:
+          type: string
+        media:
+          anyOf:
+            - $ref: "#/components/schemas/ImageMedia"
+            - type: "null"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        likeCount:
+          type: integer
+          minimum: 0
+        commentCount:
+          type: integer
+          minimum: 0
+        viewerHasLiked:
+          type: boolean
+        viewerHasSaved:
+          type: boolean
+        viewerOwns:
+          type: boolean
+    FeedPage:
+      type: object
+      additionalProperties: false
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Post"
+        nextCursor:
+          type: string
+    Comment:
+      type: object
+      additionalProperties: false
+      required: [id, postId, author, body, createdAt, updatedAt, viewerOwns]
+      properties:
+        id:
+          type: string
+          format: uuid
+        postId:
+          type: string
+          format: uuid
+        author:
+          $ref: "#/components/schemas/AuthorSummary"
+        body:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        viewerOwns:
+          type: boolean
+    CommentPage:
+      type: object
+      additionalProperties: false
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Comment"
+        nextCursor:
+          type: string
+    ErrorResponse:
+      type: object
+      additionalProperties: false
+      required: [code]
+      properties:
+        code:
+          type: string
+  responses:
+    Post:
+      description: Post
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Post"
+    FeedPage:
+      description: Feed page
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/FeedPage"
+    Comment:
+      description: Comment
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Comment"
+    CommentPage:
+      description: Comments
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/CommentPage"
+    Error:
+      description: Stable error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
