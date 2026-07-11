@@ -5,16 +5,20 @@ import { createGoApiClient } from "@coach-connect/go-api-client";
 import { appRouter } from "@coach-connect/trpc-contract";
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 
+import { getRequestAccess } from "../../../../lib/verified-access";
+
 const api = createGoApiClient({
   baseUrl: process.env.GO_API_URL ?? localServiceOrigins.goApi,
 });
 
-function handler(request: Request) {
+async function handler(request: Request) {
+  const access = await getRequestAccess();
+
   return fetchRequestHandler({
     endpoint: "/api/trpc",
     req: request,
     router: appRouter,
-    createContext: () => ({ api }),
+    createContext: () => ({ access, api }),
     onError: ({ error, path }) => {
       if (process.env.NODE_ENV === "development") {
         console.error(`tRPC failure on ${path ?? "unknown procedure"}`, error);
