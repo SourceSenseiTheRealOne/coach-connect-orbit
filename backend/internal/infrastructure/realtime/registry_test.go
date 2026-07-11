@@ -190,6 +190,9 @@ func TestRegistryDeliverDisconnectsSlowConsumerWithoutBlocking(t *testing.T) {
 	if closure.Code != CloseCodeSlowConsumer {
 		t.Fatalf("expected slow consumer close code, got %q", closure.Code)
 	}
+	if payload, ok := <-connection.Outbound(); ok {
+		t.Fatalf("expected termination to discard queued payloads, got %q", payload)
+	}
 
 	count, countErr := registry.Count(context.Background())
 	if countErr != nil {
@@ -246,10 +249,7 @@ func TestRegistryCloseRejectsInvalidOrUnknownConnection(t *testing.T) {
 func TestRegistryShutdownClosesConnectionsAndRejectsLaterOperations(t *testing.T) {
 	t.Parallel()
 
-	registry, err := NewRegistry(context.Background(), Config{MaxConnections: 2, OutboundBuffer: 1, MaxPayloadBytes: 64})
-	if err != nil {
-		t.Fatalf("create registry: %v", err)
-	}
+	registry := newTestRegistry(t, Config{MaxConnections: 2, OutboundBuffer: 1, MaxPayloadBytes: 64})
 	first := openTestConnection(t, registry, Descriptor{ID: "connection-1", ConversationID: "conversation-1", UserID: "user-1"})
 	second := openTestConnection(t, registry, Descriptor{ID: "connection-2", ConversationID: "conversation-1", UserID: "user-2"})
 
@@ -267,7 +267,7 @@ func TestRegistryShutdownClosesConnectionsAndRejectsLaterOperations(t *testing.T
 		}
 	}
 
-	_, err = registry.Open(context.Background(), Descriptor{ID: "connection-3", ConversationID: "conversation-1", UserID: "user-3"})
+	_, err := registry.Open(context.Background(), Descriptor{ID: "connection-3", ConversationID: "conversation-1", UserID: "user-3"})
 	assertErrorCode(t, err, ErrorCodeRegistryClosed)
 
 	err = registry.Deliver(context.Background(), first.Descriptor().ID, []byte("message"))
@@ -281,6 +281,7 @@ func TestRegistryParentCancellationClosesConnections(t *testing.T) {
 	t.Parallel()
 
 	parent, cancel := context.WithCancel(context.Background())
+	defer cancel()
 	registry, err := NewRegistry(parent, Config{MaxConnections: 1, OutboundBuffer: 1, MaxPayloadBytes: 64})
 	if err != nil {
 		t.Fatalf("create registry: %v", err)
@@ -315,6 +316,7 @@ func TestRegistryParentCancellationReleasesBlockedSubmitters(t *testing.T) {
 
 	const submitterCount = 32
 	parent, cancel := context.WithCancel(context.Background())
+	defer cancel()
 	registry, err := NewRegistry(parent, Config{MaxConnections: submitterCount, OutboundBuffer: 1, MaxPayloadBytes: 64})
 	if err != nil {
 		t.Fatalf("create registry: %v", err)

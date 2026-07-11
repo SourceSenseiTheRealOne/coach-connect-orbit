@@ -60,7 +60,15 @@ func (connection *Connection) Closed() <-chan Closure {
 }
 
 func (connection *Connection) terminate(closure Closure) {
-	connection.closed <- closure
-	close(connection.closed)
-	close(connection.outbound)
+	for {
+		select {
+		case <-connection.outbound:
+			continue
+		default:
+			connection.closed <- closure
+			close(connection.closed)
+			close(connection.outbound)
+			return
+		}
+	}
 }
