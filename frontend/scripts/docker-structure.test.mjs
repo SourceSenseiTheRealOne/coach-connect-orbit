@@ -25,6 +25,8 @@ test("Compose orchestrates every deployable service with health-aware wiring", a
   assert.match(compose, /"3002:3002"/);
   assert.match(compose, /"9000:9000"/);
   assert.match(compose, /GO_API_URL:\s*http:\/\/api:9000/);
+  assert.match(compose, /GATEWAY_ORIGIN:\s*http:\/\/gateway:3000/);
+  assert.match(compose, /GATEWAY_PUBLIC_ORIGIN:/);
   assert.match(compose, /SOCIAL_ORIGIN:\s*http:\/\/social:3001/);
   assert.match(compose, /MARKETPLACE_ORIGIN:\s*http:\/\/marketplace:3002/);
   assert.match(compose, /condition:\s*service_healthy/);
@@ -96,9 +98,18 @@ test("Compose configuration accepts runtime secrets without committing values", 
     /NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:\s*\$\{NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:-\}/,
   );
   assert.match(compose, /CLERK_SECRET_KEY:\s*\$\{CLERK_SECRET_KEY:-\}/);
+  assert.match(compose, /NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL:\s*\/dashboard/);
+  assert.doesNotMatch(compose, /CLERK_SIGN_(?:IN|UP)_FORCE_REDIRECT_URL/);
+  assert.equal((compose.match(/^\s+CLERK_SECRET_KEY:/gm) ?? []).length, 3);
+  assert.match(envExample, /GATEWAY_PUBLIC_ORIGIN=http:\/\/localhost:3000/);
+  assert.match(
+    compose,
+    /DATABASE_URL:\s*\$\{DATABASE_URL:-postgresql:\/\/postgres:postgres@host\.docker\.internal:54322\/postgres\?sslmode=disable\}/,
+  );
   assert.match(compose, /APP_SECRET:\s*\$\{APP_SECRET/);
   assert.match(envExample, /NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=/);
   assert.match(envExample, /CLERK_SECRET_KEY=/);
+  assert.match(envExample, /DATABASE_URL=/);
   assert.match(envExample, /APP_SECRET=/);
   assert.match(gitignore, /^\.env$/m);
 });

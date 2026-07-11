@@ -1,6 +1,7 @@
 import "server-only";
 
 import { createAccessContext } from "@coach-connect/auth/access";
+import type { AccessContext } from "@coach-connect/auth/access";
 import { applyVerifiedEmailAdminOverride } from "@coach-connect/auth/email-admin";
 import { resolveAccessFromSession } from "@coach-connect/auth/session-access";
 import { auth, currentUser } from "@clerk/nextjs/server";
@@ -22,29 +23,64 @@ async function getVerifiedPrimaryEmail(userId: string): Promise<string | null> {
 }
 
 export async function getVerifiedAccess() {
-  const { userId, sessionClaims } = await auth();
+  return (await getVerifiedRequestAuth()).access;
+}
+
+export interface RequestAuthContext {
+  access: AccessContext;
+  bearerToken: string | null;
+  identity: { displayName: string; avatarUrl: string | null } | null;
+}
+
+async function getVerifiedRequestAuth(): Promise<RequestAuthContext> {
+  const authResult = await auth();
+  const { userId, sessionClaims } = authResult;
   const access = resolveAccessFromSession({ userId, sessionClaims });
 
   if (!access.isAuthenticated) {
-    return access;
+    return { access, bearerToken: null, identity: null };
   }
 
   const verifiedPrimaryEmail = await getVerifiedPrimaryEmail(access.userId);
+  const bearerToken = await authResult.getToken();
+  const user = await currentUser();
+  const identity =
+    user?.id === access.userId
+      ? {
+          displayName:
+            [user.firstName, user.lastName].filter(Boolean).join(" ").trim() ||
+            user.username ||
+            "Football member",
+          avatarUrl: user.imageUrl || null,
+        }
+      : null;
 
-  return applyVerifiedEmailAdminOverride(
-    access,
-    verifiedPrimaryEmail,
-    permanentAdminEmails,
-  );
+  return {
+    access: applyVerifiedEmailAdminOverride(
+      access,
+      verifiedPrimaryEmail,
+      permanentAdminEmails,
+    ),
+    bearerToken,
+    identity,
+  };
 }
 
 export async function getRequestAccess() {
+  return (await getRequestAuth()).access;
+}
+
+export async function getRequestAuth(): Promise<RequestAuthContext> {
   const isClerkConfigured = Boolean(
     process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY &&
     process.env.CLERK_SECRET_KEY,
   );
 
   return isClerkConfigured
-    ? getVerifiedAccess()
-    : createAccessContext({ userId: null });
+    ? getVerifiedRequestAuth()
+    : {
+        access: createAccessContext({ userId: null }),
+        bearerToken: null,
+        identity: null,
+      };
 }

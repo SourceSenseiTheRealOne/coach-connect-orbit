@@ -13,15 +13,28 @@ import {
 
 function createContext(
   access = createAccessContext({ userId: null }),
+  bearerToken = access.isAuthenticated ? "server-token" : null,
 ): TRPCContext {
   const api: GoApiClient = {
     health: vi.fn().mockResolvedValue({
       status: "ok",
       service: "coach-connect-api",
     }),
+    listFeed: vi.fn(),
+    listSavedPosts: vi.fn(),
+    getPost: vi.fn(),
+    createPost: vi.fn(),
+    updatePost: vi.fn(),
+    deletePost: vi.fn(),
+    setPostLike: vi.fn(),
+    setSavedPost: vi.fn(),
+    listComments: vi.fn(),
+    createComment: vi.fn(),
+    updateComment: vi.fn(),
+    deleteComment: vi.fn(),
   };
 
-  return { access, api };
+  return { access, api, bearerToken, identity: null };
 }
 
 describe("health procedure", () => {
@@ -33,6 +46,57 @@ describe("health procedure", () => {
 
     expect(result).toEqual({ status: "ok", service: "coach-connect-api" });
     expect(context.api.health).toHaveBeenCalledOnce();
+  });
+});
+
+describe("social router", () => {
+  const authenticated = createAccessContext({
+    userId: "clerk-subject",
+    role: "user",
+    tier: "free",
+  });
+
+  it("forwards only the server token and bounded input", async () => {
+    const context = createContext(authenticated);
+    vi.mocked(context.api.listFeed).mockResolvedValue({ items: [] });
+    await appRouter.createCaller(context).social.feed({ limit: 25 });
+    expect(context.api.listFeed).toHaveBeenCalledWith({
+      bearerToken: "server-token",
+      limit: 25,
+    });
+  });
+
+  it("requires the server token before calling Go", async () => {
+    const context = createContext(authenticated, null);
+
+    await expect(
+      appRouter.createCaller(context).social.feed(),
+    ).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+    expect(context.api.listFeed).not.toHaveBeenCalled();
+  });
+
+  it("rejects oversized post bodies before calling Go", async () => {
+    const context = createContext(authenticated);
+    await expect(
+      appRouter
+        .createCaller(context)
+        .social.createPost({ body: "x".repeat(2001) }),
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    expect(context.api.createPost).not.toHaveBeenCalled();
+  });
+
+  it("does not expose an acting identity input", async () => {
+    const context = createContext(authenticated);
+    vi.mocked(context.api.createPost).mockResolvedValue({} as never);
+    await expect(
+      appRouter.createCaller(context).social.createPost({
+        body: "Training insight",
+        actorId: "attacker",
+      } as never),
+    ).resolves.toBeDefined();
+    expect(context.api.createPost).toHaveBeenCalledWith("Training insight", {
+      bearerToken: "server-token",
+    });
   });
 });
 

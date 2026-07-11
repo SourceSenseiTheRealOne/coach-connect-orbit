@@ -1,5 +1,6 @@
 import { CoachConnectAuthProvider } from "@coach-connect/auth";
 import { ThemeProvider } from "@coach-connect/ui";
+import { TRPCProvider } from "@coach-connect/trpc-client";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import "./globals.css";
@@ -18,7 +19,9 @@ export default function RootLayout({
         <CoachConnectAuthProvider
           publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
         >
-          <ThemeProvider>{children}</ThemeProvider>
+          <ThemeProvider>
+            <TRPCProvider>{children}</TRPCProvider>
+          </ThemeProvider>
         </CoachConnectAuthProvider>
       </body>
     </html>

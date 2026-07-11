@@ -45,9 +45,16 @@ test("dashboard scaffold has Clerk protection and an authenticated shell", async
   const proxy = await read("frontend/apps/gateway/src/proxy.ts");
   assert.match(proxy, /createRouteMatcher/);
   assert.match(proxy, /dashboard\(\.\*\)/);
+  assert.match(proxy, /feed\(\.\*\)/);
   assert.match(proxy, /auth\.protect\(\)/);
   assert.match(proxy, /CLERK_SECRET_KEY/);
   assert.match(proxy, /NextResponse\.redirect/);
+
+  const socialProxy = await read("frontend/apps/social/src/proxy.ts");
+  assert.match(socialProxy, /clerkMiddleware/);
+  assert.match(socialProxy, /feed\(\.\*\)/);
+  assert.match(socialProxy, /GATEWAY_PUBLIC_ORIGIN/);
+  assert.match(socialProxy, /redirectToGatewaySignIn/);
 
   const authProvider = await read("frontend/packages/auth/src/index.tsx");
   assert.match(authProvider, /publishableKey/);
@@ -97,7 +104,7 @@ test("dashboard scaffold has Clerk protection and an authenticated shell", async
   const trpcRoute = await read(
     "frontend/apps/gateway/src/app/api/trpc/[trpc]/route.ts",
   );
-  assert.match(trpcRoute, /getRequestAccess/);
+  assert.match(trpcRoute, /getRequestAuth/);
   assert.match(trpcRoute, /access/);
 
   const signInPage = await read(
@@ -105,6 +112,14 @@ test("dashboard scaffold has Clerk protection and an authenticated shell", async
   );
   assert.match(signInPage, /NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY/);
   assert.match(signInPage, /Clerk configuration required/);
+  assert.match(signInPage, /fallbackRedirectUrl=["']\/dashboard["']/);
+  assert.doesNotMatch(signInPage, /forceRedirectUrl/);
+
+  const signUpPage = await read(
+    "frontend/apps/gateway/src/app/sign-up/[[...sign-up]]/page.tsx",
+  );
+  assert.match(signUpPage, /fallbackRedirectUrl=["']\/dashboard["']/);
+  assert.doesNotMatch(signUpPage, /forceRedirectUrl/);
 });
 
 test("app-authored styling uses Tailwind utilities only", async () => {
